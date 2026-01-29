@@ -90,8 +90,6 @@ $redirect
 #set ($discard = $services.localization.use('document', 'InvoicesCode.InvoicesTranslations'))
 
 &lt;div class="xform" style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif; font-size:10pt;"&gt;
-  &lt;input type="hidden" name="InvoicesCode.InvoiceClass_0_number" value="$request.number"/&gt;
-
   ## Logo
   &lt;div align="center" width="100%"&gt;
     #set($sheetDocument = $xwiki.getDocument('InvoicesCode.InvoiceSheet'))

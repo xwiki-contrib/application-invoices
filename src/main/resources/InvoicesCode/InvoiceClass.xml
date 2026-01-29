@@ -151,7 +151,7 @@
       <customDisplay>{{include reference="AppWithinMinutes.DateDisplayer" /}}</customDisplay>
       <dateFormat>dd/MM/yyyy</dateFormat>
       <disabled>0</disabled>
-      <emptyIsToday>0</emptyIsToday>
+      <emptyIsToday>1</emptyIsToday>
       <hint/>
       <name>date</name>
       <number>7</number>
