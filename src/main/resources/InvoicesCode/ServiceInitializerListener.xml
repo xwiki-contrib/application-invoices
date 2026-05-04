@@ -622,6 +622,7 @@ import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
 import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.script.service.ScriptServiceManager;
+import com.xpn.xwiki.render.ScriptXWikiServletRequest;
 import org.xwiki.velocity.VelocityManager;
 
 import com.xpn.xwiki.XWikiContext;
@@ -635,6 +636,8 @@ import com.xpn.xwiki.user.api.XWikiRightService;
 import com.xpn.xwiki.web.XWikiRequest;
 import com.xpn.xwiki.web.XWikiServletRequest;
 import com.xpn.xwiki.web.XWikiURLFactory;
+import org.xwiki.security.authorization.ContextualAuthorizationManager;
+import org.slf4j.Logger;
 
 @Component(roles = InvoiceManager.class)
 public class InvoiceManager
@@ -671,6 +674,12 @@ public class InvoiceManager
 
     @Inject
     private VelocityManager velocityManager;
+
+	@Inject
+    private ContextualAuthorizationManager authorization;
+
+    @Inject
+    private Logger logger;
 
     public InvoiceCustomer getInvoiceCustomer(String userReference) throws XWikiException
     {
@@ -803,6 +812,7 @@ public class InvoiceManager
         try {
             // Hack to make sure we have programming right
             xdocument.setContentAuthor(XWikiRightService.SUPERADMIN_USER);
+
             this.services.mailsender.send(message);
         } finally {
             xdocument.setContentAuthorReference(currentAuthor);
@@ -834,8 +844,9 @@ public class InvoiceManager
         VelocityContext velocityContext = this.velocityManager.getVelocityContext();
 
         XWikiURLFactory currentURLFactory = xcontext.getURLFactory();
-        XWikiRequest currentRequest = velocityContext.get('request');
         XWikiDocument currentXWikiDocument = xcontext.getDoc();
+	    XWikiRequest currentRequest = xcontext.getRequest();
+        XWikiRequest currentVelocityRequest = velocityContext.get('request');
 
         try {
           XWikiURLFactory urlFactory = new PdfURLFactory();
@@ -870,7 +881,7 @@ public class InvoiceManager
               return "";
             }
           };
-          velocityContext.put('request', request);
+          velocityContext.put('request', new ScriptXWikiServletRequest(request, authorization));
           velocityContext.put('doc', invoiceDocument.newDocument(xcontext));
           velocityContext.put('tdoc', velocityContext.get('doc'));
 
@@ -888,6 +899,7 @@ public class InvoiceManager
 
           return pdfStream.toByteArray();
         } finally {
+          xcontext.setRequest(currentRequest);
           velocityContext.put('request', currentRequest);
           xcontext.setURLFactory(currentURLFactory);
           velocityContext.put('doc', currentXWikiDocument.newDocument(xcontext));
